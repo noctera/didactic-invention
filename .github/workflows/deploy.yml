@@ -29,8 +29,10 @@ jobs:
       - name: Extract version
         id: version
         run: |
+          npm i --no-save --no-package-look @actions/core
           set -x
           node -e "
+            const core = require('@action/core')
             const { version } = require('./package.json');
             const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
 
@@ -38,12 +40,11 @@ jobs:
               : !version.includes('experimental') && branch === 'main' ? 'latest' : null;
 
             if (!tag) {
-              console.log('you may forgot to remove the experimental label');
-              process.exit(1);
+              core.setFailed('you may forgot to remove the experimental label');
             }
 
-            console.log(`::set-output name=version::${version}`);
-            console.log(`::set-output name=tag::${tag}`);
+            core.setOutput("version", version);
+            core.setOutput("tag", tag);
           "
 
       - name: Test
