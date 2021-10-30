@@ -36,9 +36,11 @@ jobs:
 
       - name: Change scope
         run: npm init --scope=luwol03 -y
-        
+
       - name: Publish to gpr
         uses: JS-DevTools/npm-publish@v1
+        env:
+          INPUT_TOKEN: ""
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           registry: https://npm.pkg.github.com/
