@@ -34,27 +34,27 @@ jobs:
         run: |
           version=$(node -e "
             const pkgVersion = require('./package.json').version;
-            const ref = process.env.GITHUB_REF;
+            const ref = process.env.GITHUB_REF.split('refs/heads/');
 
             console.log(pkgVersion, ref);
-            process.exit(1);
-            console.log(!.includes('dev') &&  ? 'dev' : 'latest')
+            // process.exit(1);
+            // console.log(!.includes('dev') &&  ? 'dev' : 'latest')
           ")
           echo ::set-output name=version::${version}
       
-      - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          tag: 
+      # - name: Publish to npm
+      #   uses: JS-DevTools/npm-publish@v1
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
+      #     tag: 
 
-      - name: Change scope
-        env:
-          INPUT_TOKEN: ""
-        run: npm init --scope=luwol03 -y
+      # - name: Change scope
+      #   env:
+      #     INPUT_TOKEN: ""
+      #   run: npm init --scope=luwol03 -y
 
-      - name: Publish to gpr
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          registry: https://npm.pkg.github.com/
+      # - name: Publish to gpr
+      #   uses: JS-DevTools/npm-publish@v1
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     registry: https://npm.pkg.github.com/
