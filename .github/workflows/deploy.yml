@@ -40,11 +40,11 @@ jobs:
               : !version.includes('experimental') && branch === 'main' ? 'latest' : null;
 
             if (!tag) {
-              core.setFailed('you may forgot to remove the experimental label');
+              return core.setFailed('you may forgot to remove the experimental label');
             }
 
-            core.setOutput("version", version);
-            core.setOutput("tag", tag);
+            core.setOutput('version', version);
+            core.setOutput('tag', tag);
           "
 
       - name: Test
