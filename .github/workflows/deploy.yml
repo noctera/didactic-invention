@@ -32,6 +32,7 @@ jobs:
       - name: Extract version
         id: version
         run: |
+          set -x
           version=$(node -e "
             const pkgVersion = require('./package.json').version;
             const ref = process.env.GITHUB_REF.split('refs/heads/');
