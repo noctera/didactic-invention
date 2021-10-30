@@ -9,6 +9,7 @@ env:
 
 jobs:
   npm:
+    name: ":npm: NPM"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,8 +31,6 @@ jobs:
         run: |
           set -x
           node -e "
-            const core = require('@actions/core');
-            console.log(core);
             const { version } = require('./package.json');
             const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
 
