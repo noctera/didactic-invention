@@ -34,8 +34,10 @@ jobs:
         with:
           token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to gpr
+      - name: Change scope
         run: npm init --scope=luwol03 -y
+        
+      - name: Publish to gpr
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
