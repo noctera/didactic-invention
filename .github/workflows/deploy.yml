@@ -29,10 +29,24 @@ jobs:
       - name: Test
         run: npm run lint -- --max-warnings=0
 
+      - name: Extract version
+        id: version
+        run: |
+          version=$(node -e "
+            const pkgVersion = require('./package.json').version;
+            const ref = process.env.GITHUB_REF;
+
+            console.log(pkgVersion, ref);
+            process.exit(1);
+            console.log(!.includes('dev') &&  ? 'dev' : 'latest')
+          ")
+          echo ::set-output name=version::${version}
+      
       - name: Publish to npm
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
+          tag: 
 
       - name: Change scope
         env:
