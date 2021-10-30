@@ -29,7 +29,9 @@ jobs:
       - name: Extract version
         id: version
         run: |
+          mv package.json package.json.bak
           npm i --no-save --no-package-look @actions/core
+          mv package.json.bak package.json
           set -x
           node -e "
             const core = require('@actions/core')
@@ -40,7 +42,8 @@ jobs:
               : !version.includes('experimental') && branch === 'main' ? 'latest' : null;
 
             if (!tag) {
-              return core.setFailed('you may forgot to remove the experimental label');
+              core.setFailed('you may forgot to remove the experimental label');
+              process.exit(1);
             }
 
             core.setOutput('version', version);
