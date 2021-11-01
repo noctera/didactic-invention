@@ -8,8 +8,8 @@ env:
   DOCKER_PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64/v8 #linux/s390x,linux/ppc64le
 
 jobs:
-  npm:
-    name: 📦 npm
+  build: 
+    name: 🔧 build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,11 +50,17 @@ jobs:
             core.setOutput('tag', tag);
           "
 
+  npm:
+    name: 📦 npm
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      
       - name: Test
         run: |
           set -x
-          echo ${{steps.version.outputs.version}}
-          echo ${{steps.version.outputs.tag}}
+          echo ${{jobs.build.steps.version.outputs.version}}
+          echo ${{jobs.build.steps.version.outputs.tag}}
       # - name: Publish to npm
       #   uses: JS-DevTools/npm-publish@v1
       #   with:
