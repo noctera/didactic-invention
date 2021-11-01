@@ -49,6 +49,7 @@ jobs:
             core.setOutput('version', version);
             core.setOutput('tag', tag);
           "
+          echo "::set-output name=test::world"
 
   npm:
     name: 📦 npm
@@ -61,6 +62,7 @@ jobs:
           set -x
           echo ${{needs.build.steps.version.outputs.version}}
           echo ${{needs.build.steps.version.outputs.tag}}
+          echo ${{needs.build.steps.version.outputs.test}}
       # - name: Publish to npm
       #   uses: JS-DevTools/npm-publish@v1
       #   with:
