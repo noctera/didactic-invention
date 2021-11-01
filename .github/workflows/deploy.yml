@@ -56,13 +56,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      
       - name: Test
         run: |
           set -x
           echo ${{needs.build.steps.version.outputs.version}}
           echo ${{needs.build.steps.version.outputs.tag}}
-          echo ${{needs.build.steps.version.outputs.test}}
+          echo ${{toJSON(needs)}}
       # - name: Publish to npm
       #   uses: JS-DevTools/npm-publish@v1
       #   with:
