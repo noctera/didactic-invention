@@ -53,6 +53,13 @@ jobs:
             core.setOutput('tag', tag);
           "
 
+      - name: Test
+        run: |
+          set -x
+          echo ${{steps.version.outputs.version}}
+          echo ${{steps.version.outputs.tag}}
+          echo "${{toJSON(steps)}}"
+
   npm:
     name: 📦 npm
     needs: build
