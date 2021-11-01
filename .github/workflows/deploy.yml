@@ -59,8 +59,8 @@ jobs:
       - name: Test
         run: |
           set -x
-          echo ${{jobs.build.steps.version.outputs.version}}
-          echo ${{jobs.build.steps.version.outputs.tag}}
+          echo ${{needs.build.steps.version.outputs.version}}
+          echo ${{needs.build.steps.version.outputs.tag}}
       # - name: Publish to npm
       #   uses: JS-DevTools/npm-publish@v1
       #   with:
