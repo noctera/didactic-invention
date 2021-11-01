@@ -12,8 +12,8 @@ jobs:
     name: 🔧 build
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.version }}
-      tag: ${{ steps.version.tag }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
