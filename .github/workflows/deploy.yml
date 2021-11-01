@@ -30,16 +30,12 @@ jobs:
       #   run: npm run lint -- --max-warnings=0
 
       - name: Extract version
+        uses: actions/github-script@v5
         id: version
-        run: |
-          mv package.json package.json.bak
-          npm i --no-save --no-package-look @actions/core
-          mv package.json.bak package.json
-          set -x
-          node -e "
-            const core = require('@actions/core')
+        width:
+          script: |
             const { version } = require('./package.json');
-            const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
+            const branch = context.ref.split('refs/heads/')[1];
           
             const tag = !version.includes('rc') && branch === 'main' ? 'latest'
               : version.includes('rc') && branch === 'experimental' ? 'rc' : null;
@@ -51,7 +47,6 @@ jobs:
           
             core.setOutput('version', version);
             core.setOutput('tag', tag);
-          "
 
   npm:
     name: 📦 npm
@@ -107,7 +102,9 @@ jobs:
             type=semver,pattern={{major}},value=${{ needs.build.outputs.version }}
             type=sha
 
+      - run: echo "${{ steps.meta.outputs.json }}"
       - run: echo "${{ toJSON(steps) }}"
+      - run: echo "${{ toJSON(needs) }}"
 
       # :latest
       # 
