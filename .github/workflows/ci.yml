@@ -91,8 +91,9 @@ jobs:
             const isMain = github.ref === 'refs/heads/main' && !version.includes('rc')
             const isExperimental = github.ref === 'refs/heads/experimental' && version.includes('rc')
           
-            core.debug('isMain: ' + isMain)
-            core.debug('isExperimental: ' + isExperimental)
+            core.debug(github.ref, version)
+            core.debug('isMain: ', isMain)
+            core.debug('isExperimental: ', isExperimental)
 
             const tags = [
               'type=ref,event=branch',
