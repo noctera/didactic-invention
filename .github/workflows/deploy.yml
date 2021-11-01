@@ -41,8 +41,8 @@ jobs:
             const { version } = require('./package.json');
             const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
           
-            const tag = version.includes('experimental') && branch === 'experimental' ? 'experimental'
-              : !version.includes('experimental') && branch === 'main' ? 'latest' : null;
+            const tag = !version.includes('rc') && branch === 'main' ? 'latest'
+              : version.includes('rc') && branch === 'experimental' ? 'rc' : null;
           
             if (!tag) {
               core.setFailed('you may forgot to remove the experimental label');
@@ -53,37 +53,25 @@ jobs:
             core.setOutput('tag', tag);
           "
 
-      - name: Test
-        run: |
-          set -x
-          echo ${{steps.version.outputs.version}}
-          echo ${{steps.version.outputs.tag}}
-          echo "${{toJSON(steps)}}"
-
   npm:
     name: 📦 npm
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        run: |
-          set -x
-          echo ${{needs.build.steps.version.outputs.version}}
-          echo ${{needs.build.steps.version.outputs.tag}}
-          echo "${{toJSON(needs)}}"
-      # - name: Publish to npm
-      #   uses: JS-DevTools/npm-publish@v1
-      #   with:
-      #     token: ${{ secrets.NPM_TOKEN }}
-      #     tag: 
+      - name: Publish to npm
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: ${{ needs.build.outputs.tag }}
 
-      # - name: Change scope
-      #   env:
-      #     INPUT_TOKEN: ""
-      #   run: npm init --scope=luwol03 -y
+      - name: Change scope
+        env:
+          INPUT_TOKEN: ""
+        run: npm init --scope=luwol03 -y
 
-      # - name: Publish to gpr
-      #   uses: JS-DevTools/npm-publish@v1
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     registry: https://npm.pkg.github.com/
+      - name: Publish to gpr
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          registry: https://npm.pkg.github.com/
+          tag: ${{ needs.build.outputs.tag }}
