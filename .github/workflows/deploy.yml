@@ -11,6 +11,9 @@ jobs:
   build: 
     name: 🔧 build
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.version }}
+      tag: ${{ steps.version.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -29,27 +32,26 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          # mv package.json package.json.bak
-          # npm i --no-save --no-package-look @actions/core
-          # mv package.json.bak package.json
-          # set -x
-          # node -e "
-          #   const core = require('@actions/core')
-          #   const { version } = require('./package.json');
-          #   const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
-          # 
-          #   const tag = version.includes('experimental') && branch === 'experimental' ? 'experimental'
-          #     : !version.includes('experimental') && branch === 'main' ? 'latest' : null;
-          # 
-          #   if (!tag) {
-          #     core.setFailed('you may forgot to remove the experimental label');
-          #     process.exit(1);
-          #   }
-          # 
-          #   core.setOutput('version', version);
-          #   core.setOutput('tag', tag);
-          # "
-          echo "::set-output name=test::world"
+          mv package.json package.json.bak
+          npm i --no-save --no-package-look @actions/core
+          mv package.json.bak package.json
+          set -x
+          node -e "
+            const core = require('@actions/core')
+            const { version } = require('./package.json');
+            const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
+          
+            const tag = version.includes('experimental') && branch === 'experimental' ? 'experimental'
+              : !version.includes('experimental') && branch === 'main' ? 'latest' : null;
+          
+            if (!tag) {
+              core.setFailed('you may forgot to remove the experimental label');
+              process.exit(1);
+            }
+          
+            core.setOutput('version', version);
+            core.setOutput('tag', tag);
+          "
 
   npm:
     name: 📦 npm
