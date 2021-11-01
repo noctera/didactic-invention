@@ -91,6 +91,9 @@ jobs:
             const isMain = github.ref === 'refs/heads/main' && !version.includes('rc')
             const isExperimental = github.ref === 'refs/heads/experimental' && version.includes('rc')
           
+            core.debug('isMain: ' + isMain)
+            core.debug('isExperimental: ' + isExperimental)
+
             const tags = [
               'type=ref,event=branch',
               'type=ref,event=pr',
@@ -105,7 +108,8 @@ jobs:
               tags.push(`type=semver,pattern={{major}},value=${version}`)
             }
             
-            core.setOutput('tags', tags.join("\n"));
+            core.debug(tags);
+            core.setOutput('tags', tags.join('\n'));
 
       - name: Docker meta
         id: meta
@@ -118,7 +122,6 @@ jobs:
 
       - run: echo "${{ steps.meta.outputs.json }}"
       - run: echo "${{ toJSON(steps) }}"
-      - run: echo "${{ toJSON(needs) }}"
 
       # :latest
       # 
