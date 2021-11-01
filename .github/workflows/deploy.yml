@@ -30,16 +30,12 @@ jobs:
       #   run: npm run lint -- --max-warnings=0
 
       - name: Extract version
+        uses: actions/github-script@v5
         id: version
-        run: |
-          mv package.json package.json.bak
-          npm i --no-save --no-package-look @actions/core
-          mv package.json.bak package.json
-          set -x
-          node -e "
-            const core = require('@actions/core')
+        with:
+          script: |
             const { version } = require('./package.json');
-            const branch = process.env.GITHUB_REF.split('refs/heads/')[1];
+            const branch = context.ref.split('refs/heads/')[1];
           
             const tag = !version.includes('rc') && branch === 'main' ? 'latest'
               : version.includes('rc') && branch === 'experimental' ? 'rc' : null;
@@ -51,12 +47,12 @@ jobs:
           
             core.setOutput('version', version);
             core.setOutput('tag', tag);
-          "
 
   npm:
     name: 📦 npm
     needs: build
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -78,3 +74,95 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           registry: https://npm.pkg.github.com/
           tag: ${{ needs.build.outputs.tag }}
+
+  docker:
+    name: 🐋 docker
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ["linux/amd64"] # "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
+  
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            luwol03/vocascan-server
+            ghcr.io/luwol03/vocascan-server
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}},value=${{ needs.build.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.build.outputs.version }}
+            type=semver,pattern={{major}},value=${{ needs.build.outputs.version }}
+
+      - run: echo "${{ steps.meta.outputs.json }}"
+      - run: echo "${{ toJSON(steps) }}"
+      - run: echo "${{ toJSON(needs) }}"
+
+      # :latest
+      # 
+      # :1.0.0
+      # :1.0.0-rc.1
+      # 
+      # :pr-1
+      # :experimental
+      # :my-feature
+
+
+      #- name: Set up QEMU
+      #  uses: docker/setup-qemu-action@v1
+      #
+      #- name: Set up Docker Buildx
+      #  uses: docker/setup-buildx-action@v1
+      #
+      #- name: Cache Docker layers
+      #  uses: actions/cache@v2
+      #  with:
+      #    path: /tmp/.buildx-cache
+      #    key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
+      #    restore-keys: ${{ runner.os }}-buildx-${{ matrix.platform }}-
+      #
+      #- name: Build
+      #  uses: docker/build-push-action@v2
+      #  with:
+      #    context: .
+      #    file: ./Dockerfile
+      #    platforms: ${{ matrix.platform }}
+      #    push: false
+      #    tags: |
+      #      luwol03/vocascan-server:${{ needs.build.outputs.tag }}
+      #      ghcr.io/luwol03/vocascan-server:${{ needs.build.outputs.tag }}
+      #    cache-from: type=local,src=/tmp/.buildx-cache
+      #    cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+      #
+      #- name: Login to DockerHub
+      #  uses: docker/login-action@v1
+      #  with:
+      #    username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+      #
+      #- name: Login to ghcr
+      #  uses: docker/login-action@v1
+      #  with:
+      #    registry: ghcr.io
+      #    username: ${{ github.repository_owner }}
+      #    password: ${{ secrets.GITHUB_TOKEN }}
+      #
+      #- name: Build
+      #  uses: docker/build-push-action@v2
+      #  with:
+      #    context: .
+      #    file: ./Dockerfile
+      #    platforms: ${{ matrix.platform }}
+      #    push: true
+      #    tags: |
+      #      luwol03/vocascan-server:${{ needs.build.outputs.tag }}
+      #      ghcr.io/luwol03/vocascan-server:${{ needs.build.outputs.tag }}
+      #    cache-from: type=local,src=/tmp/.buildx-cache
+      #    cache-to: type=local,dest=/tmp/.buildx-cache,mode=max    
