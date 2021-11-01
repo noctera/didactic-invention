@@ -11,9 +11,6 @@ jobs:
   build: 
     name: 🔧 build
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -29,6 +26,14 @@ jobs:
       # - name: Test
       #   run: npm run lint -- --max-warnings=0
 
+  npm:
+    name: 📦 npm
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Extract version
         uses: actions/github-script@v5
         id: version
@@ -38,30 +43,20 @@ jobs:
             const branch = context.ref.split('refs/heads/')[1];
           
             const tag = !version.includes('rc') && branch === 'main' ? 'latest'
-              : version.includes('rc') && branch === 'experimental' ? 'rc' : null;
+              : version.includes('rc') && branch === 'experimental' ? 'experimental' : null;
           
             if (!tag) {
               core.setFailed('you may forgot to remove the rc label');
               process.exit(1);
             }
-          
-            core.setOutput('version', version);
+            
             core.setOutput('tag', tag);
-
-  npm:
-    name: 📦 npm
-    needs: build
-    runs-on: ubuntu-latest
-    if: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
 
       - name: Publish to npm
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          tag: ${{ needs.build.outputs.tag }}
+          tag: ${{ steps.version.outputs.tag }}
 
       - name: Change scope
         env:
@@ -73,7 +68,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           registry: https://npm.pkg.github.com/
-          tag: ${{ needs.build.outputs.tag }}
+          tag: ${{ steps.version.outputs.tag }}
 
   docker:
     name: 🐋 docker
@@ -87,6 +82,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Extract version 
+        uses: actions/github-script@v5
+        id: version
+        with:
+          script: |
+            const { version } = require('./package.json')
+            const isMain = github.ref === 'refs/heads/main' && !version.includes('rc')
+            const isExperimental = github.ref === 'refs/heads/experimental' && version.includes('rc')
+          
+            const tags = [
+              'type=ref,event=branch',
+              'type=ref,event=pr',
+            ]            
+
+            if (isMain || isExperimental) {
+              tags.push(`type=semver,pattern={{version}},value=${version}`)
+            }
+
+            if (isMain) {
+              tags.push(`type=semver,pattern={{major}}.{{minor}},value=${version}`)
+              tags.push(`type=semver,pattern={{major}},value=${version}`)
+            }
+            
+            core.setOutput('tags', tags.join("\n"));
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -94,12 +114,7 @@ jobs:
           images: |
             luwol03/vocascan-server
             ghcr.io/luwol03/vocascan-server
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}},value=${{ needs.build.outputs.version }},enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/experimental' }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ needs.build.outputs.version }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=semver,pattern={{major}},value=${{ needs.build.outputs.version }},enable=${{ github.ref == 'refs/heads/main' }}
+          tags: ${{ steps.version.outputs.tags }}
 
       - run: echo "${{ steps.meta.outputs.json }}"
       - run: echo "${{ toJSON(steps) }}"
