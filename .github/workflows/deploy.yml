@@ -32,7 +32,7 @@ jobs:
       - name: Extract version
         uses: actions/github-script@v5
         id: version
-        width:
+        with:
           script: |
             const { version } = require('./package.json');
             const branch = context.ref.split('refs/heads/')[1];
