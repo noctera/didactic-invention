@@ -45,7 +45,7 @@ jobs:
               : version.includes('rc') && branch === 'experimental' ? 'rc' : null;
           
             if (!tag) {
-              core.setFailed('you may forgot to remove the experimental label');
+              core.setFailed('you may forgot to remove the rc label');
               process.exit(1);
             }
           
