@@ -29,6 +29,7 @@ jobs:
   npm:
     name: 📦 npm
     needs: build
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/experimental' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,12 +40,14 @@ jobs:
         id: version
         with:
           script: |
-            const { version } = require('./package.json');
-            const branch = context.ref.split('refs/heads/')[1];
-          
-            const tag = !version.includes('rc') && branch === 'main' ? 'latest'
-              : version.includes('rc') && branch === 'experimental' ? 'experimental' : null;
-          
+            const { version } = require('./package.json')
+            const isMain = context.ref === 'refs/heads/main' && !version.includes('rc')
+            const isExperimental = context.ref === 'refs/heads/experimental' && version.includes('rc')
+
+            const tag = isMain ? 'latest'
+              : isExperimental ? 'experimental'
+              : null
+
             if (!tag) {
               core.setFailed('you may forgot to remove the rc label');
               process.exit(1);
@@ -90,11 +93,6 @@ jobs:
             const { version } = require('./package.json')
             const isMain = context.ref === 'refs/heads/main' && !version.includes('rc')
             const isExperimental = context.ref === 'refs/heads/experimental' && version.includes('rc')
-          
-            core.debug(context.ref)
-            core.debug(version)
-            core.debug('isMain: ' + isMain)
-            core.debug('isExperimental: ' + isExperimental)
 
             const tags = [
               'type=ref,event=branch',
@@ -110,7 +108,6 @@ jobs:
               tags.push(`type=semver,pattern={{major}},value=${version}`)
             }
             
-            core.debug(tags);
             core.setOutput('tags', tags.join('\n'));
 
       - name: Docker meta
