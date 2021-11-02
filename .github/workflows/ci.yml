@@ -21,6 +21,8 @@ jobs:
         with:
           node-version: 14
 
+      - run: echo '${{ github.ref }}'
+
       # - name: Install dependencies
       #   run: npm i --sqlite
 
