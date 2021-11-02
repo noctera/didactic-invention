@@ -15,6 +15,7 @@ const exportGroup = catchAsync(async (req, res) => {
     type: 'vocascan/group',
     ...group.toJSON(),
   };
+  console.log("Test");
   res.send(formatted);
 });
 
