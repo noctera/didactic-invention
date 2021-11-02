@@ -9,8 +9,8 @@ env:
   DOCKER_PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64/v8 #,linux/s390x,linux/ppc64le
 
 jobs:
-  build: 
-    name: 🔧 build
+  test: 
+    name: 🧪 test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,7 +29,7 @@ jobs:
 
   npm:
     name: 📦 npm
-    needs: build
+    needs: test
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/experimental' }}
     runs-on: ubuntu-latest
     steps:
@@ -76,7 +76,7 @@ jobs:
 
   docker:
     name: 🐋 docker
-    needs: build
+    needs: test
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/experimental' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
