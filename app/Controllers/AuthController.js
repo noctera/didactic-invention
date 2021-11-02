@@ -22,6 +22,8 @@ const register = catchAsync(async (req, res) => {
     await useInviteCode(req.query.inviteCode);
   }
 
+  console.log("Test");
+
   res.send({ token, user });
 });
 
