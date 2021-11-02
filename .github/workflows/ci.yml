@@ -5,6 +5,9 @@ on:
   - pull_request
   - workflow_dispatch
 
+env:
+  DOCKER_PLATFORMS: linux/amd64,linux/arm/v7  #,linux/arm64/v8 #,linux/s390x,linux/ppc64le
+
 jobs:
   build: 
     name: 🔧 build
@@ -76,10 +79,6 @@ jobs:
     needs: build
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/experimental' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: ["linux/amd64", "linux/arm/v7"] #, "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
-  
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -128,15 +127,15 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-${{ matrix.platform }}-
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-
       
       - name: Build
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ env.DOCKER_PLATFORMS }}
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -161,7 +160,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ env.DOCKER_PLATFORMS }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
