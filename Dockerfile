@@ -18,4 +18,4 @@ COPY . .
 
 RUN npm link
 
-CMD ["npm", "run", "start"]
+CMD ["vocascan-server", "web"]
