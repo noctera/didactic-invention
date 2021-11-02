@@ -16,4 +16,6 @@ COPY --from=builder /build/node_modules /app/node_modules
 
 COPY . .
 
+RUN npm link
+
 CMD ["npm", "run", "start"]
